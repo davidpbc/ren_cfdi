@@ -46,6 +46,7 @@ class CFDi(object):
         self.attributes = dict()
         self.prefix = prefix
         # Comprueba que el archivo exista
+        #raise ValueError("El archivo %s existe: %s" %(fileName, os.path.isfile(fileName)))
         if os.path.isfile(fileName):
             # Convierte el XML en un objeto MiniDOM para poder manipularlo
             self.comprobante = minidom.parse(fileName).childNodes[0]
@@ -219,8 +220,8 @@ class CFDi(object):
         if not impuestos:
             return False
         data = {}
-        data['traslados'] = self.process_impuestos_childs(impuestos[0], 'T')
-        data['retenciones'] =self.process_impuestos_childs(impuestos[0], 'R')
+        data['traslados'] = self.process_impuestos_childs(impuestos[-1], 'T')
+        data['retenciones'] =self.process_impuestos_childs(impuestos[-1], 'R')
         self.attributes['impuestos'] = data
         return False
 
