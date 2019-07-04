@@ -3,10 +3,11 @@
 Título              : ren_cfdi_int.py
 Descripción         : Interfaz para Procesador de archivos XML de CFDi
                       Ayuda en el procesamiento masivo de CFDis
-Autor               : David Padilla
+Autor               : David Padilla (mods Aztecos)
 Fecha (creación)    : 11/09/2018
 Fecha (modificación): 29/09/2018
-Versión             : 1.2
+Fecha (modificación): 09/10/2018 Aztecos
+Versión             : 1.5
 Uso                 : Interfaz que utiliza el módulo ren_cfdi.py
                       - Ejecutar:
                       python ren_cfdi_int.py
@@ -30,10 +31,11 @@ class mainWindow(object):
         self.master = master
         self.fileCsvName = False
 
-        # Entrada de Texto 'Folio'
+        # Entrada de Texto 'Folio' {CP.ACS: }
         Label(master, text="Folio").grid(row=0)
         self.e1 = Entry(master)
         self.e1.grid(row=0, column=1)
+        self.e1.focus()
 
         # Botón de selección de 'Directorio'
         Label(master, text="Directorio de Archivos").grid(row=1)
@@ -43,6 +45,15 @@ class mainWindow(object):
         # Check para generar 'CSV'
         self.e3 = IntVar()
         Checkbutton(master, text="CSV", variable=self.e3).grid(row=2, sticky=W)
+        self.e3.set(1)
+
+        # C.P. ACS Check para generar 'sóloReporte'
+        self.e4 = IntVar()
+        Checkbutton(master, text="sinRenombrar", variable=self.e4).grid(row=3, sticky=W)
+
+        # C.P. ACS Check para usar criterio 'Ventas'
+        self.e5 = IntVar()
+        #Checkbutton(master, text="Ventas", variable=self.e5).grid(column=2, row=3, sticky=W)
 
         # Botones de Acción
         Button(master, text='Salir', command=master.quit).grid(row=5, column=0, sticky=W, pady=4)
@@ -66,16 +77,17 @@ class mainWindow(object):
             self.master.quit()
         sys.stdout.write("Folio: %s\nFolder: %s\nCSV: %s\n" \
             % (self.e1.get(), self.e2, self.e3.get()))
-        if self.e3.get():
+        if self.e3.get:
             self.generate_csv()
         for root, dirs, files in os.walk(self.e2):
             for name in files:
                 if name.split(".")[-1].upper() in ("XML"):
                     filename = "{}{}{}".format(self.e2, os.sep, name)
                     sys.stdout.write("{}\n".format(filename))
-                    fileCfdi = CFDi(filename, self.e1.get())
+                    fileCfdi = CFDi(filename, self.e1.get().upper())
                     sys.stdout.write("Valores: {}\n".format(str(fileCfdi.values)))
-                    fileCfdi.rename_file()
+                    if not self.e4.get():
+                        fileCfdi.rename_file()
                     if self.e3.get():
                         fileCfdi.generate_csv_line(self.fileCsvName)
 
@@ -102,6 +114,7 @@ class mainWindow(object):
         vals.append('RFC Receptor')
         vals.append('UUID')
         vals.append('Folio')
+        vals.append('NumEmpleado')#  mod C.P. ACS
         vals.append('Sub Total')
         vals.append('Descuento')
         vals.append('Total')
@@ -120,6 +133,8 @@ class mainWindow(object):
         vals.append('M.P.')
         vals.append('Tipo')
         vals.append('Versión')
+        vals.append('ImpPagado')
+        vals.append('=SUMA(Y2:Y9999)')
         return ",".join(vals)
 
 

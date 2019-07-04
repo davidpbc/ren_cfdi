@@ -46,7 +46,6 @@ class CFDi(object):
         self.attributes = dict()
         self.prefix = prefix
         # Comprueba que el archivo exista
-        #raise ValueError("El archivo %s existe: %s" %(fileName, os.path.isfile(fileName)))
         if os.path.isfile(fileName):
             # Convierte el XML en un objeto MiniDOM para poder manipularlo
             self.comprobante = minidom.parse(fileName).childNodes[0]
@@ -220,8 +219,8 @@ class CFDi(object):
         if not impuestos:
             return False
         data = {}
-        data['traslados'] = self.process_impuestos_childs(impuestos[-1], 'T')
-        data['retenciones'] =self.process_impuestos_childs(impuestos[-1], 'R')
+        data['traslados'] = self.process_impuestos_childs(impuestos[-1], 'T') #Corrección de ErrorIVAtotal david@rNet ([0], 'T'))
+        data['retenciones'] =self.process_impuestos_childs(impuestos[-1], 'R') #Corrección david@rNet ([0], 'R'))
         self.attributes['impuestos'] = data
         return False
 
@@ -299,11 +298,11 @@ class CFDi(object):
     def get_ded_data(self, deducciones):
         """
         Obtiene el total de deducciones en un CFDi de Nómina, filtra por clave para
-        no sumar algunas claves (modificar a conveniencia del usuario final)
+        no sumar algunas claves (modificar a conveniencia del usuario final) {['080', '081'] 100Viaticos C.P.ACS}
         """
         total_ded = 0.0
         isr = 0.0
-        deducciones_no_incluidas = ['080', '081']
+        deducciones_no_incluidas = ['080', '100', '081']
         for ded in deducciones:
             if ded['tipo'] not in deducciones_no_incluidas:
                 total_ded += float(ded['monto'])
@@ -377,13 +376,14 @@ class CFDi(object):
         Obtiene los valores que se utilizarán para generar el nombre del archivo
         así como el archivo csv con el resumen de las operaciones.
         Estos valores son almacenados en la variable values
+        values['folio'] = self.attributes['comprobante'].get('Folio', 'NA') {saved}
         """
         values = {}
         values['tipo'] = self.docType
         values['uuid1'] = self.attributes['timbre'].get('UUID', 'XXXX')[-4:]
-        values['rfce'] = self.attributes['emisor'].get('rfc', 'AAA010101AAA')[:-7]
+        values['rfce'] = self.attributes['emisor'].get('rfc', 'AAA010101AAA')#[:-7] mod C.P. ACS
         values['folio'] = self.attributes['comprobante'].get('Folio', 'NA')
-        values['rfcr'] = self.attributes['receptor'].get('rfc', 'AAA010101AAA')[:-7]
+        values['rfcr'] = self.attributes['receptor'].get('rfc', 'AAA010101AAA')#[:-7] mod C.P. ACS
         values['uso_cfdi'] = self.attributes['receptor'].get('uso_cfdi', 'NA')
         values['total'] = self.attributes['comprobante'].get('Total', 0)
         values['mpago'] = self.attributes['comprobante'].get('MetodoPago', '-')
@@ -430,7 +430,7 @@ class CFDi(object):
         """
         t = self.docType
         file_name = "{}-{}_{}_{}_{}_{}_{}_{}{}".format(p, v['uuid1'],
-            v['rfcr'], v['no_emp'], v['rfce'], v['per_f'], v['neto_f'], t, v['nom_ver'])
+            v['rfcr'][:-7], v['no_emp'], v['rfce'][:-7], v['per_f'], v['neto_f'], t, v['nom_ver'])# mod C.P. ACS
         return file_name
 
     def get_name_i(self, v, p):
@@ -441,7 +441,7 @@ class CFDi(object):
         """
         t = self.docType
         file_name = "{}-{}_{}_{}_{}_{}_{}_{}_{}{}".format(p, v['uuid1'], \
-            v['rfce'], v['folio'], v['rfcr'], v['total'], v['uso_cfdi'], v['mpago'], t, v['ver'])
+            v['rfce'][:-7], v['folio'], v['rfcr'][:-7], v['total'], v['uso_cfdi'], v['mpago'], t, v['ver'])# mod C.P. ACS
         return file_name
 
     def get_name_p(self, v, p):
@@ -450,7 +450,7 @@ class CFDi(object):
         """
         t = self.docType
         file_name = "{}-{}_{}_{}_{}_#{}_{}_{}{}".format(p, v['uuid1'], \
-            v['rfce'], v['folio'], v['rfcr'], v['uuid2'], v['monto'], t, v['ver'])
+            v['rfce'][:-7], v['folio'], v['rfcr'][:-7], v['uuid2'], v['monto'], t, v['ver'])# mod C.P. ACS
         return file_name
 
     def set_name(self):
@@ -482,6 +482,7 @@ class CFDi(object):
         line.append(str(v['rfcr']))
         line.append(str(v['uuid1']))
         line.append(str(v['folio']))
+        line.append(str(v['no_emp']))# mod C.P. ACS
         line.append(str(v['subtotal']))
         line.append(str(v['descuento']))
         line.append(str(v['total']))
@@ -500,6 +501,9 @@ class CFDi(object):
         line.append(str(v['mpago']))
         line.append(str(v['tipo']))
         line.append(str(v['ver']))
+        if str(v['mpago'])=='PUE':
+            line.append(str(v['total']))
+        line.append(str(v['monto']))
         return ",".join(line)
 
     def rename_file(self):
