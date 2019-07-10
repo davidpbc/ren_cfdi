@@ -107,6 +107,8 @@ class CFDi(object):
                     doctoAttrs = dict(doc.attributes.items())
                     docto = {}
                     importe = float(doctoAttrs.get('ImpPagado', 0))
+                    if not importe or importe == 0:
+                        importe = pagoAttrs.get('Monto', 0)
                     docto['docto'] = doctoAttrs.get('IdDocumento')
                     docto['importe'] = importe
                     data['total'] += importe
