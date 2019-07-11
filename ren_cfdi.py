@@ -108,7 +108,7 @@ class CFDi(object):
                     docto = {}
                     importe = float(doctoAttrs.get('ImpPagado', 0))
                     if not importe or importe == 0:
-                        importe = pagoAttrs.get('Monto', 0)
+                        importe = float(pagoAttrs.get('Monto', 0))
                     docto['docto'] = doctoAttrs.get('IdDocumento')
                     docto['importe'] = importe
                     data['total'] += importe
@@ -532,6 +532,10 @@ class CFDi(object):
         if not os.path.isfile(newFileNameXml):
             os.rename(oldFileNameXml, newFileNameXml)
             os.system("touch {}".format(newFileNameXml))
+            print "Renombrando: {}\nA: {}\n\n".format(self.fileName, self.values['file_name'])
+        else:
+            print "El nombre de archivo {} ya existe\nNo se renombra el " \
+                  "archivo {}.\n\n".format(newFileNameXml, oldFileNameXml)
 
         # Comprobar que no exista el archivo PDF con nombre nuevo
         if not os.path.isfile(newFileNamePdf):
@@ -539,8 +543,10 @@ class CFDi(object):
             if os.path.isfile(oldFileNamePdf):
                 os.rename(oldFileNamePdf, newFileNamePdf)
                 os.system("touch {}".format(newFileNamePdf))
+        else:
+            print "El nombre de archivo {} ya existe\nNo se renombra el " \
+                  "archivo {}.\n\n".format(newFileNamePdf, oldFileNamePdf)
 
-        print "{} => {}".format(self.fileName, self.values['file_name'])
 
     def generate_csv_line(self, fileCsvName):
         """

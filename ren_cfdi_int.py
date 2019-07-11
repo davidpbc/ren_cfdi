@@ -85,8 +85,9 @@ class mainWindow(object):
                     filename = "{}{}{}".format(self.e2, os.sep, name)
                     sys.stdout.write("{}\n".format(filename))
                     fileCfdi = CFDi(filename, self.e1.get().upper())
-                    sys.stdout.write("Valores: {}\n".format(str(fileCfdi.values)))
+                    sys.stdout.write("Valores: {}\n\n".format(str(fileCfdi.values)))
                     if not self.e4.get():
+                        sys.stdout.write("==========Cambiando nombre de Archivo: =========\n{}\n".format(fileCfdi.fileName))
                         fileCfdi.rename_file()
                     if self.e3.get():
                         fileCfdi.generate_csv_line(self.fileCsvName)
