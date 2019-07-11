@@ -504,7 +504,10 @@ class CFDi(object):
         line.append(str(v['tipo']))
         line.append(str(v['ver']))
         if str(v['mpago'])=='PUE':
-            line.append(str(v['total']))
+            if str(v['tipo']) == 'E':
+                line.append(str(float(v['total']) * -1.))
+            else:
+                line.append(str(v['total']))
         line.append(str(v['monto']))
         return ",".join(line)
 
